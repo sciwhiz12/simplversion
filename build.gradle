@@ -9,6 +9,11 @@ repositories {
     mavenCentral()
 }
 
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(8)
+    withJavadocJar()
+}
+
 dependencies {
     //noinspection GradlePackageUpdate We can't upgrade to 6.x because that's Java 11
     implementation 'org.eclipse.jgit:org.eclipse.jgit:5.13.1.202206130422-r'
