@@ -266,22 +266,52 @@ public abstract class VersionExtension {
         this.getSnapshotIncrementPosition().set(snapshotIncrementPosition);
     }
 
+    /**
+     * Skips snapshot positional incrementing if any of the given classifiers are found in the raw version as a suffix
+     * separated by a hyphen ({@code -}).
+     *
+     * @param classifiers a list of classifiers
+     * @see #getSkipIncrement()
+     */
     public void skipIncrementForClassifiers(final List<String> classifiers) {
         skipIncrement(ver -> classifiers.stream().anyMatch(classifier -> ver.getRawVersion().contains("-" + classifier)));
     }
 
+    /**
+     * Skips snapshot positional incrementing if any of the given classifiers are found in the raw version as a suffix
+     * separated by a hyphen ({@code -}).
+     *
+     * @param classifiers a list of classifiers
+     * @see #getSkipIncrement()
+     */
     public void skipIncrementForClassifiers(String... classifiers) {
         skipIncrementForClassifiers(Arrays.asList(classifiers));
     }
 
+    /**
+     * @param skipIncrement the predicate for skipping snapshot positional incrementing
+     * @see #getSkipIncrement()
+     */
     public void skipIncrement(Spec<VersionInformation> skipIncrement) {
         this.setSkipIncrement(skipIncrement);
     }
 
+    /**
+     * @param skipIncrement the predicate for skipping snapshot positional incrementing
+     * @see #getSkipIncrement()
+     */
     public void setSkipIncrement(Spec<VersionInformation> skipIncrement) {
         this.skipIncrement = skipIncrement;
     }
 
+    /**
+     * The predicate used in determining whether to skip {@linkplain #getSnapshotIncrementPosition()
+     * snapshot positional incrementing}. The version information provided to the predicate is not the final version
+     * information; the raw version contains the version before any increment, while the classifiers does not contain
+     * the snapshot classifier if the version is a snapshot.
+     *
+     * @see #skipIncrementForClassifiers(List)
+     */
     public Spec<VersionInformation> getSkipIncrement() {
         return skipIncrement;
     }
