@@ -29,7 +29,7 @@ class VersionPluginFunctionalTest {
         writeString(getSettingsFile(), "");
         writeString(getBuildFile(),
                 "plugins {" +
-                        "  id('tk.sciwhiz12.gradle.simplversion.greeting')" +
+                        "  id('tk.sciwhiz12.gradle.simplversion')" +
                         "}");
 
         // Run the build
@@ -40,8 +40,8 @@ class VersionPluginFunctionalTest {
         runner.withProjectDir(projectDir);
         BuildResult result = runner.build();
 
-        // Verify the result
-        assertTrue(result.getOutput().contains("Hello from plugin 'tk.sciwhiz12.gradle.simplversion.greeting'"));
+//        // Verify the result
+//        assertTrue(result.getOutput().contains("Hello from plugin 'tk.sciwhiz12.gradle.simplversion'"));
     }
 
     private void writeString(File file, String string) throws IOException {

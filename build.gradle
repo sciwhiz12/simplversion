@@ -10,13 +10,16 @@ repositories {
 }
 
 dependencies {
+    //noinspection GradlePackageUpdate We can't upgrade to 6.x because that's Java 11
+    implementation 'org.eclipse.jgit:org.eclipse.jgit:5.13.1.202206130422-r'
+
     testImplementation 'org.junit.jupiter:junit-jupiter:5.8.2'
 }
 
 gradlePlugin {
     plugins {
         greeting {
-            id = 'tk.sciwhiz12.gradle.simplversion.greeting'
+            id = 'tk.sciwhiz12.gradle.simplversion'
             implementationClass = 'tk.sciwhiz12.gradle.simplversion.VersionPlugin'
         }
     }

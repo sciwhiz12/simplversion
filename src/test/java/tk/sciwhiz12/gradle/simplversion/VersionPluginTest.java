@@ -11,9 +11,9 @@ class VersionPluginTest {
     void pluginRegistersATask() {
         // Create a test project and apply the plugin
         Project project = ProjectBuilder.builder().build();
-        project.getPlugins().apply("tk.sciwhiz12.gradle.simplversion.greeting");
+        project.getPlugins().apply("tk.sciwhiz12.gradle.simplversion");
 
-        // Verify the result
-        assertNotNull(project.getTasks().findByName("greeting"));
+//        // Verify the result
+//        assertNotNull(project.getTasks().findByName("greeting"));
     }
 }
