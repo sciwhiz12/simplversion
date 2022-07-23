@@ -1,0 +1,49 @@
+plugins {
+    id 'java-gradle-plugin'
+}
+
+group = 'tk.sciwhiz12.gradle'
+version = '0.1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.8.2'
+}
+
+gradlePlugin {
+    plugins {
+        greeting {
+            id = 'tk.sciwhiz12.gradle.simplversion.greeting'
+            implementationClass = 'tk.sciwhiz12.gradle.simplversion.VersionPlugin'
+        }
+    }
+}
+
+sourceSets {
+    functionalTest {
+    }
+}
+
+configurations.functionalTestImplementation.extendsFrom(configurations.testImplementation)
+
+tasks.register('functionalTest', Test) {
+    group 'verification'
+    description 'Runs the functional test suite.'
+
+    testClassesDirs = sourceSets.functionalTest.output.classesDirs
+    classpath = sourceSets.functionalTest.runtimeClasspath
+    useJUnitPlatform()
+}
+
+gradlePlugin.testSourceSets(sourceSets.functionalTest)
+
+tasks.named('check') {
+    dependsOn(tasks.named('functionalTest'))
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}

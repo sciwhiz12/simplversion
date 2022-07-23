@@ -1,0 +1,5 @@
+# These are explicitly windows files and should use CRLF
+*.bat                       text eol=crlf
+
+# Java source files should use LF
+src/**/*.java               text eol=lf
