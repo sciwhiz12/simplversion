@@ -12,6 +12,8 @@ import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.gradle.api.Project;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
+import org.gradle.api.provider.ListProperty;
+import org.gradle.api.provider.Property;
 import org.gradle.api.specs.Spec;
 import org.gradle.api.specs.Specs;
 
@@ -22,16 +24,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class VersionExtension {
+public abstract class VersionExtension {
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
     private static final Logger LOGGER = Logging.getLogger(VersionExtension.class);
 
     private final Project project;
 
-    private boolean stripBranchPrefix = true;
-    private List<String> customPrefixes = new ArrayList<>();
-    private boolean useDirty = false;
-    private int snapshotIncrementPosition = 0;
     private Spec<VersionInformation> skipIncrement = Specs.satisfyNone();
 
     private boolean parsedVersion = false;
@@ -45,11 +43,19 @@ public class VersionExtension {
 
     public VersionExtension(Project project) {
         this.project = project;
+
+        this.getStripBranchPrefix().convention(true);
+        this.getSnapshotIncrementPosition().convention(0);
     }
 
     private void calculateVersion() {
         if (parsedVersion) return;
         parsedVersion = true;
+
+        this.getStripBranchPrefix().finalizeValue();
+        this.getCustomPrefixes().finalizeValue();
+        this.getDirtySuffix().finalizeValue();
+        this.getSnapshotIncrementPosition().finalizeValue();
 
         try (Repository repository = new FileRepositoryBuilder()
                 .readEnvironment()
@@ -95,11 +101,11 @@ public class VersionExtension {
                 descVer = allExceptLast.substring(0, secondToLastSep);
                 descCount = allExceptLast.substring(secondToLastSep + 1);
 
-                if (stripBranchPrefix) {
+                if (getStripBranchPrefix().get()) {
                     descVer = tryStripPrefix(descVer, branchName);
                 }
 
-                for (String prefix : customPrefixes) {
+                for (String prefix : this.getCustomPrefixes().get()) {
                     String prevVersion = descVer;
                     descVer = tryStripPrefix(descVer, prefix);
                     if (!prevVersion.equals(descVer)) break; // Changed, so skip out
@@ -112,8 +118,11 @@ public class VersionExtension {
                 if (commitCount == 0) {
                     snapshot = dirty;
                     classifiers = "";
-                } else if (dirty && useDirty) {
-                    classifiers += ".dirty";
+                } else if (dirty) {
+                    final String suffix = getDirtySuffix().getOrNull();
+                    if (suffix != null && suffix.isEmpty()) {
+                        classifiers += suffix;
+                    }
                 }
 
             }
@@ -122,6 +131,8 @@ public class VersionExtension {
                     new VersionInformation(rawVersion, snapshot, classifiers, timestamp, commitId);
 
             if (snapshot) {
+
+                final int snapshotIncrementPosition = getSnapshotIncrementPosition().get();
                 if (!classifiers.equals("-UNKNOWN") && !rawVersion.equals("0.0.0")
                         && snapshotIncrementPosition != 0
                         && !skipIncrement.isSatisfiedBy(skipIncrementVerisonInfo)) {
@@ -173,46 +184,73 @@ public class VersionExtension {
         return version.substring(prefix.length() + 1);
     }
 
-    public void setStripBranchPrefix(boolean stripBranchPrefix) {
-        this.stripBranchPrefix = stripBranchPrefix;
+    /**
+     * Whether to strip the current branch from the version as a prefix. This is related to but exists separately
+     * from the {@link #getCustomPrefixes() custom prefixes}, and runs before any custom prefix is checked.
+     */
+    public abstract Property<Boolean> getStripBranchPrefix();
+
+    /**
+     * The list of custom version prefixes which will be removed from the version.
+     *
+     * <p>Each custom prefix is checked in the order specified in the list. Only a single custom prefix will be removed.
+     * If a custom prefix has been found and stripped, any following custom prefixes are left unchecked.</p>
+     *
+     * <p>The prefix is only recognized if it is separated from the rest of the version by a separator character
+     * ({@code -} or {@code /}).</p>
+     *
+     * @see #getStripBranchPrefix()
+     */
+    public abstract ListProperty<String> getCustomPrefixes();
+
+    /**
+     * Adds a new custom prefix.
+     *
+     * @param customPrefix a custom prefix
+     * @see #getCustomPrefixes()
+     */
+    public void setCustomPrefix(String customPrefix) {
+        getCustomPrefixes().add(customPrefix);
     }
 
-    public boolean getStripBranchPrefix() {
-        return stripBranchPrefix;
+    /**
+     * Adds a new custom prefix.
+     *
+     * @param customPrefix a custom prefix
+     * @see #getCustomPrefixes()
+     */
+    public void customPrefix(String customPrefix) {
+        getCustomPrefixes().add(customPrefix);
     }
 
-    public void setCustomPrefix(@Nullable String customPrefix) {
-        if (customPrefix != null && customPrefix.isEmpty()) return;
+    /**
+     * The suffix to be appended to the version string as a classifier if the environment has uncommitted changes. If
+     * this is an empty or absent string, no suffix will be appended. This suffix will not be appended if the current
+     * version is a tagged version; in that case, the environment's dirtiness will be reflected by marking the version
+     * as a snapshot.
+     */
+    public abstract Property<String> getDirtySuffix();
 
-        if (customPrefix == null) {
-            this.customPrefixes.clear();
-        } else {
-            this.customPrefixes.add(customPrefix);
-        }
-    }
-
-    public void customPrefix(@Nullable String customPrefix) {
-        if (customPrefix != null && customPrefix.isEmpty()) return;
-
-        if (customPrefix != null) this.customPrefixes.add(customPrefix);
-    }
-
-    public List<String> getCustomPrefixes() {
-        return customPrefixes;
-    }
-
-    public void setUseDirty(boolean useDirty) {
-        this.useDirty = useDirty;
-    }
-
-    public boolean getUseDirty() {
-        return useDirty;
-    }
+    /**
+     * The position in the version to be incremented if the version is marked as a snapshot.
+     *
+     * <p>Positive values are interpreted starting from the beginning, while negative values are interpreted starting
+     * from the end. For example, {@code 2} would be taken as the second position from the beginning ({@code 2} in
+     * {@code 1.2.3.4}), while {@code -2} would be taken as the second-to-last position or second position from the end
+     * ({@code 3} in {@code 1.2.3.4}).</p>
+     *
+     * <p>A value of zero means no position will be incremented. If the value indicates a position which cannot be
+     * present in the version (e.g. {@code 5} in {@code 1.2.3}), then no position will be incremented.</p>
+     *
+     * @see #getSkipIncrement()
+     */
+    public abstract Property<Integer> getSnapshotIncrementPosition();
 
     /**
      * @param incrementPositionIfSnapshot the one-based position to increment, or {@code 0} to disable. Negative values
      *                                    are interpreted as positions starting from the end; {@code -1} would be the last number in the version, {@code -2}
      *                                    would be the second-to-last position, and so on.
+     * @see #getSnapshotIncrementPosition()
      */
     public void incrementPositionIfSnapshot(int incrementPositionIfSnapshot) {
         this.setIncrementPositionIfSnapshot(incrementPositionIfSnapshot);
@@ -222,13 +260,10 @@ public class VersionExtension {
      * @param snapshotIncrementPosition the one-based position to increment, or {@code 0} to disable. Negative values
      *                                  are interpreted as positions starting from the end; {@code -1} would be the last number in the version, {@code -2}
      *                                  would be the second-to-last position, and so on.
+     * @see #getSnapshotIncrementPosition()
      */
     public void setIncrementPositionIfSnapshot(int snapshotIncrementPosition) {
-        this.snapshotIncrementPosition = snapshotIncrementPosition;
-    }
-
-    public int getSnapshotIncrementPosition() {
-        return snapshotIncrementPosition;
+        this.getSnapshotIncrementPosition().set(snapshotIncrementPosition);
     }
 
     public void skipIncrementForClassifiers(final List<String> classifiers) {
@@ -289,10 +324,6 @@ public class VersionExtension {
     public boolean isSnapshot() {
         calculateVersion();
         return this.snapshot;
-    }
-
-    public void setCustomPrefixes(List<String> customPrefixes) {
-        this.customPrefixes = customPrefixes;
     }
 
     public String getTimestamp() {
