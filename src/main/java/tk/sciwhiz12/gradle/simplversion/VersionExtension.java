@@ -14,10 +14,13 @@ import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
+import org.gradle.api.provider.Provider;
+import org.gradle.api.provider.ProviderFactory;
 import org.gradle.api.specs.Spec;
 import org.gradle.api.specs.Specs;
 
 import javax.annotation.Nullable;
+import javax.inject.Inject;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -29,33 +32,40 @@ public abstract class VersionExtension {
     private static final Logger LOGGER = Logging.getLogger(VersionExtension.class);
 
     private final Project project;
+    private final Provider<VersionInformation> versionInfoProvider;
 
     private Spec<VersionInformation> skipIncrement = Specs.satisfyNone();
 
+    private VersionInformation versionInformation = null;
     private boolean parsedVersion = false;
-
-    private String timestamp = "1970-01-01T00:00:00+00:00";
-    private String commitId = "0000000000000000000000000000000000000000";
-    private String abbrevId = "000000";
-    private String rawVersion = "0.0.0";
-    private boolean snapshot = true;
-    private String classifiers = "-UNKNOWN";
 
     public VersionExtension(Project project) {
         this.project = project;
 
         this.getStripBranchPrefix().convention(true);
         this.getSnapshotIncrementPosition().convention(0);
+
+        this.versionInfoProvider = getProviderFactory().provider(this::calculateVersion);
     }
 
-    private void calculateVersion() {
-        if (parsedVersion) return;
+    @Inject
+    protected abstract ProviderFactory getProviderFactory();
+
+    private VersionInformation calculateVersion() {
+        if (parsedVersion) return versionInformation;
         parsedVersion = true;
 
         this.getStripBranchPrefix().finalizeValue();
         this.getCustomPrefixes().finalizeValue();
         this.getDirtySuffix().finalizeValue();
         this.getSnapshotIncrementPosition().finalizeValue();
+
+        String timestamp = "1970-01-01T00:00:00+00:00";
+        String commitId = "0000000000000000000000000000000000000000";
+        String abbrevId = "000000";
+        String rawVersion = "0.0.0";
+        boolean snapshot = true;
+        String classifiers = "-UNKNOWN";
 
         try (Repository repository = new FileRepositoryBuilder()
                 .readEnvironment()
@@ -88,8 +98,7 @@ public abstract class VersionExtension {
             final Git git = Git.wrap(repository);
             final String describe = git.describe().setTags(true).setLong(true).call();
 
-            // By default, the classifier is set to the commit ID if available
-            classifiers = hasCommitId ? '+' + (abbrevId != null ? abbrevId : commitId) : "";
+            classifiers = hasCommitId ? '+' + abbrevId : "";
 
             if (describe != null) {
                 String descVer;
@@ -128,7 +137,7 @@ public abstract class VersionExtension {
             }
 
             final VersionInformation skipIncrementVerisonInfo =
-                    new VersionInformation(rawVersion, snapshot, classifiers, timestamp, commitId);
+                    new VersionInformation(rawVersion, snapshot, classifiers, timestamp, commitId, abbrevId);
 
             if (snapshot) {
 
@@ -166,6 +175,9 @@ public abstract class VersionExtension {
         } catch (Exception e) {
             LOGGER.warn("Exception while getting version info from Git: {}", e.toString());
         }
+
+        versionInformation = new VersionInformation(rawVersion, snapshot, classifiers, timestamp, commitId, abbrevId);
+        return versionInformation;
     }
 
     private String tryStripPrefix(String version, @Nullable String prefix) {
@@ -316,123 +328,39 @@ public abstract class VersionExtension {
         return skipIncrement;
     }
 
+    public Provider<VersionInformation> getInfo() {
+        return versionInfoProvider;
+    }
+
     public String getVersion() {
-        calculateVersion();
-        return this.rawVersion + this.classifiers;
+        return getInfo().get().getVersion();
     }
 
     public String getRawVersion() {
-        calculateVersion();
-        return this.rawVersion;
+        return getInfo().get().getRawVersion();
     }
 
     public String getSimpleVersion() {
-        calculateVersion();
-        return this.rawVersion + (this.snapshot ? "-SNAPSHOT" : "");
+        return getInfo().get().getSimpleVersion();
     }
 
     public String getCommitTimestamp() {
-        calculateVersion();
-        return this.timestamp;
+        return getInfo().get().getCommitTimestamp();
     }
 
     public String getAbbreviatedCommitId() {
-        calculateVersion();
-        return this.abbrevId;
+        return getInfo().get().getAbbreviatedCommitId();
     }
 
-    public String getCommitId() {
-        calculateVersion();
-        return this.commitId;
+    public String getFullCommitId() {
+        return getInfo().get().getFullCommitId();
     }
 
     public String getClassifiers() {
-        calculateVersion();
-        return this.classifiers;
+        return getInfo().get().getClassifiers();
     }
 
     public boolean isSnapshot() {
-        calculateVersion();
-        return this.snapshot;
-    }
-
-    public String getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(String timestamp) {
-        this.timestamp = timestamp;
-    }
-
-    public void setCommitId(String commitId) {
-        this.commitId = commitId;
-    }
-
-    public String getAbbrevId() {
-        return abbrevId;
-    }
-
-    public void setAbbrevId(String abbrevId) {
-        this.abbrevId = abbrevId;
-    }
-
-    public void setRawVersion(String rawVersion) {
-        this.rawVersion = rawVersion;
-    }
-
-    public boolean getSnapshot() {
-        return snapshot;
-    }
-
-    public void setSnapshot(boolean snapshot) {
-        this.snapshot = snapshot;
-    }
-
-    public void setClassifiers(String classifiers) {
-        this.classifiers = classifiers;
-    }
-
-    public static class VersionInformation {
-        private final String rawVersion;
-        private final boolean snapshot;
-        /**
-         * The classifiers of the version. This does not include the automatically prepended {@code -SNAPSHOT} classifier
-         * when {@link #snapshot} is {@code true}.
-         */
-        private final String classifiers;
-        private final String commitTimestamp;
-        private final String commitId;
-
-        public VersionInformation(String rawVersion, boolean snapshot, String classifiers, String commitTimestamp, String commitId) {
-            this.rawVersion = rawVersion;
-            this.snapshot = snapshot;
-            this.classifiers = classifiers;
-            this.commitTimestamp = commitTimestamp;
-            this.commitId = commitId;
-        }
-
-        public String getRawVersion() {
-            return rawVersion;
-        }
-
-        public boolean getSnapshot() {
-            return snapshot;
-        }
-
-        public boolean isSnapshot() {
-            return snapshot;
-        }
-
-        public String getClassifiers() {
-            return classifiers;
-        }
-
-        public String getCommitTimestamp() {
-            return commitTimestamp;
-        }
-
-        public String getCommitId() {
-            return commitId;
-        }
+        return getInfo().get().isSnapshot();
     }
 }
