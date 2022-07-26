@@ -66,7 +66,7 @@ public class VersionInformation {
     }
 
     public String getSimpleVersion() {
-        return this.rawVersion + (this.snapshot ? "-SNAPSHOT" : "");
+        return this.rawVersion + (this.snapshot ? VersionExtension.SNAPSHOT_SUFFIX : "");
     }
 
     public String getVersion() {

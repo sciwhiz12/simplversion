@@ -28,6 +28,11 @@ import java.util.Arrays;
 import java.util.List;
 
 public abstract class VersionExtension {
+    /**
+     * The suffix recognized by Apache Maven for snapshot versions, including the separating hyphen.
+     */
+    public static final String SNAPSHOT_SUFFIX = "-SNAPSHOT";
+
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
     private static final Logger LOGGER = Logging.getLogger(VersionExtension.class);
 
@@ -169,7 +174,7 @@ public abstract class VersionExtension {
 
                 }
 
-                classifiers = "-SNAPSHOT" + classifiers;
+                classifiers = SNAPSHOT_SUFFIX + classifiers;
             }
 
         } catch (Exception e) {
@@ -320,7 +325,7 @@ public abstract class VersionExtension {
      * The predicate used in determining whether to skip {@linkplain #getSnapshotIncrementPosition()
      * snapshot positional incrementing}. The version information provided to the predicate is not the final version
      * information; the raw version contains the version before any increment, while the classifiers does not contain
-     * the snapshot classifier if the version is a snapshot.
+     * the snapshot suffix ({@value SNAPSHOT_SUFFIX}) even if the version is a snapshot.
      *
      * @see #skipIncrementForClassifiers(List)
      */
