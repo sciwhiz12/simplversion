@@ -27,6 +27,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * The extension for simplversion. All properties in this extension are finalized when the version is calculated and
+ * read.
+ *
+ * @see #getInfo()
+ * @see #getVersion()
+ */
 public abstract class VersionExtension {
     /**
      * The suffix recognized by Apache Maven for snapshot versions, including the separating hyphen.
@@ -333,38 +340,107 @@ public abstract class VersionExtension {
         return skipIncrement;
     }
 
+    /**
+     * Returns the version information, automatically calculated when first queried. Once the version is calculated,
+     * all properties on this extension are finalized.
+     *
+     * @return the version information, in a provider
+     */
     public Provider<VersionInformation> getInfo() {
         return versionInfoProvider;
     }
 
+    /**
+     * Returns the full version. This automatically calculates the version information if not calculated previously.
+     *
+     * @return the full version
+     * @see #getInfo()
+     * @see VersionExtension#getVersion()
+     */
     public String getVersion() {
         return getInfo().get().getVersion();
     }
 
+    /**
+     * Returns the raw version without any classifiers. This automatically calculates the version information if not
+     * calculated previously.
+     *
+     * @return the raw version
+     * @see #getInfo()
+     * @see VersionExtension#getRawVersion()
+     */
     public String getRawVersion() {
         return getInfo().get().getRawVersion();
     }
 
+    /**
+     * Returns the simple version. This automatically calculates the version information if not calculated previously.
+     *
+     * @return the simple version
+     * @see #getVersion()
+     * @see #getInfo()
+     * @see VersionInformation#getSimpleVersion()
+     */
     public String getSimpleVersion() {
         return getInfo().get().getSimpleVersion();
     }
 
+    /**
+     * Returns the timestamp of the current commit, formatted with the ISO-8601 extended offset date-time format. This
+     * automatically calculates the version information if not calculated previously.
+     *
+     * @return the current commit timestamp
+     * @see #getInfo()
+     * @see VersionInformation#getCommitTimestamp()
+     */
     public String getCommitTimestamp() {
         return getInfo().get().getCommitTimestamp();
     }
 
+    /**
+     * Returns the abbreviated SHA-1 of the current commit, in lowercase hexadecimal format. This automatically
+     * calculates the version information if not calculated previously.
+     *
+     * @return the abbreviated SHA-1 of the current commit.
+     * @see #getInfo()
+     * @see VersionInformation#getAbbreviatedCommitId()
+     */
     public String getAbbreviatedCommitId() {
         return getInfo().get().getAbbreviatedCommitId();
     }
 
+    /**
+     * Returns the full SHA-1 of the current commit, in lowercase hexadecimal format. This automatically calculates the
+     * version information if not calculated previously.
+     *
+     * @return the full SHA-1 of the current commit
+     * @see #getInfo()
+     * @see VersionInformation#getFullCommitId()
+     */
     public String getFullCommitId() {
         return getInfo().get().getFullCommitId();
     }
 
+    /**
+     * Returns the classifiers for the version. This automatically calculates the version information if not calculated
+     * previously.
+     *
+     * @return the classifiers
+     * @see #getInfo()
+     * @see VersionInformation#getClassifiers()
+     */
     public String getClassifiers() {
         return getInfo().get().getClassifiers();
     }
 
+    /**
+     * Returns whether this is a snapshot version. This automatically calculates the version information if not
+     * calculated previously.
+     *
+     * @return {@code true} if this is a snapshot version, {@code false} otherwise
+     * @see #getInfo()
+     * @see VersionInformation#isSnapshot()
+     */
     public boolean isSnapshot() {
         return getInfo().get().isSnapshot();
     }
