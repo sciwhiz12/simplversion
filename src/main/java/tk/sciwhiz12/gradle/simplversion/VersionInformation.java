@@ -100,7 +100,7 @@ public class VersionInformation {
     }
 
     /**
-     * Returns the timestamp of the current commit, formatted with the ISO-8601 extended offset date-time format..
+     * Returns the timestamp of the current commit, formatted with the ISO-8601 extended offset date-time format.
      *
      * @return the current commit timestamp
      * @see java.time.format.DateTimeFormatter#ISO_OFFSET_DATE_TIME
