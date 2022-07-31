@@ -250,6 +250,8 @@ public abstract class VersionExtension {
     /**
      * Whether to strip the current branch from the version as a prefix. This is related to but exists separately
      * from the {@link #getCustomPrefixes() custom prefixes}, and runs before any custom prefix is checked.
+     * 
+     * @return whether to strip the current branch from the version as a prefix 
      */
     public abstract Property<Boolean> getStripBranchPrefix();
 
@@ -262,6 +264,7 @@ public abstract class VersionExtension {
      * <p>The prefix is only recognized if it is separated from the rest of the version by a separator character
      * ({@code -} or {@code /}).</p>
      *
+     * @return the list of custom version prefixes
      * @see #getStripBranchPrefix()
      */
     public abstract ListProperty<String> getCustomPrefixes();
@@ -272,7 +275,10 @@ public abstract class VersionExtension {
      *
      * <p>All parts of the raw version which match the pattern are removed, and only those parts which match the
      * pattern. Users should take care to include in the pattern any separator that separates the affix they are
-     * trying to remove.To reduce the amount of accidental removals in the middle of the string, the pattern should use the line start boundary matcher {@code ^}.</p>
+     * trying to remove. To reduce the amount of accidental removals in the middle of the string, the pattern should use
+     * the line start boundary matcher {@code ^}.</p>
+     * 
+     * @return the custom pattern to be stripped
      */
     public Property<Pattern> getStripPattern() {
         return this.stripPattern;
@@ -313,6 +319,8 @@ public abstract class VersionExtension {
      * this is an empty or absent string, no suffix will be appended. This suffix will not be appended if the current
      * version is a tagged version; in that case, the environment's dirtiness will be reflected by marking the version
      * as a snapshot.
+     * 
+     * @return the dirty workspace suffix
      */
     public abstract Property<String> getDirtySuffix();
 
@@ -328,13 +336,15 @@ public abstract class VersionExtension {
      * present in the version (e.g. {@code 5} in {@code 1.2.3}), then no position will be incremented.</p>
      *
      * @see #getSkipIncrement()
+     * @return the snapshot increment position
      */
     public abstract Property<Integer> getSnapshotIncrementPosition();
 
     /**
      * @param incrementPositionIfSnapshot the one-based position to increment, or {@code 0} to disable. Negative values
-     *                                    are interpreted as positions starting from the end; {@code -1} would be the last number in the version, {@code -2}
-     *                                    would be the second-to-last position, and so on.
+     *                                    are interpreted as positions starting from the end; {@code -1} would be the 
+     *                                    last number in the version, {@code -2} would be the second-to-last position, 
+     *                                    and so on.
      * @see #getSnapshotIncrementPosition()
      */
     public void incrementPositionIfSnapshot(int incrementPositionIfSnapshot) {
@@ -343,8 +353,9 @@ public abstract class VersionExtension {
 
     /**
      * @param snapshotIncrementPosition the one-based position to increment, or {@code 0} to disable. Negative values
-     *                                  are interpreted as positions starting from the end; {@code -1} would be the last number in the version, {@code -2}
-     *                                  would be the second-to-last position, and so on.
+     *                                  are interpreted as positions starting from the end; {@code -1} would be the 
+     *                                  last number in the version, {@code -2} would be the second-to-last position, 
+     *                                  and so on.
      * @see #getSnapshotIncrementPosition()
      */
     public void setIncrementPositionIfSnapshot(int snapshotIncrementPosition) {
@@ -395,6 +406,7 @@ public abstract class VersionExtension {
      * information; the raw version contains the version before any increment, while the classifiers does not contain
      * the snapshot suffix ({@value SNAPSHOT_SUFFIX}) even if the version is a snapshot.
      *
+     * @return the predicate used for determining whether to skip snapshot positional incrementing
      * @see #skipIncrementForClassifiers(List)
      */
     public Spec<VersionInformation> getSkipIncrement() {
