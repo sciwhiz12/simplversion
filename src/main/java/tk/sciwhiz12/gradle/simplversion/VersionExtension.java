@@ -12,6 +12,7 @@ import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.gradle.api.Project;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
+import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
@@ -26,6 +27,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * The extension for simplversion. All properties in this extension are finalized when the version is calculated and
@@ -46,6 +49,7 @@ public abstract class VersionExtension {
     private final Project project;
     private final Provider<VersionInformation> versionInfoProvider;
 
+    private final Property<Pattern> stripPattern;
     private Spec<VersionInformation> skipIncrement = Specs.satisfyNone();
 
     private VersionInformation versionInformation = null;
@@ -54,11 +58,16 @@ public abstract class VersionExtension {
     public VersionExtension(Project project) {
         this.project = project;
 
+        this.stripPattern = getObjectFactory().property(Pattern.class);
+
         this.getStripBranchPrefix().convention(true);
         this.getSnapshotIncrementPosition().convention(0);
 
         this.versionInfoProvider = getProviderFactory().provider(this::calculateVersion);
     }
+
+    @Inject
+    protected abstract ObjectFactory getObjectFactory();
 
     @Inject
     protected abstract ProviderFactory getProviderFactory();
@@ -130,6 +139,14 @@ public abstract class VersionExtension {
                     String prevVersion = descVer;
                     descVer = tryStripPrefix(descVer, prefix);
                     if (!prevVersion.equals(descVer)) break; // Changed, so skip out
+                }
+
+                final Pattern stripPattern = getStripPattern().getOrNull();
+                if (stripPattern != null) {
+                    final Matcher matcher = stripPattern.matcher(descVer);
+                    if (matcher.find()) {
+                        descVer = matcher.replaceAll("");
+                    }
                 }
 
                 rawVersion = descVer.startsWith("v") ? descVer.substring(1) : descVer;
@@ -226,6 +243,28 @@ public abstract class VersionExtension {
      * @see #getStripBranchPrefix()
      */
     public abstract ListProperty<String> getCustomPrefixes();
+
+    /**
+     * A custom pattern which is stripped from the raw version after the branch prefix and any custom prefixes are
+     * removed.
+     *
+     * <p>All parts of the raw version which match the pattern are removed, and only those parts which match the
+     * pattern. Users should take care to include in the pattern any separator that separates the affix they are
+     * trying to remove.To reduce the amount of accidental removals in the middle of the string, the pattern should use the line start boundary matcher {@code ^}.</p>
+     */
+    public Property<Pattern> getStripPattern() {
+        return this.stripPattern;
+    }
+
+    /**
+     * Sets the custom stripping pattern. The pattern is compiled using {@link Pattern#compile(String)}.
+     *
+     * @param pattern the custom stripping pattern
+     * @see #getStripPattern()
+     */
+    public void setStripPattern(String pattern) {
+        getStripPattern().set(Pattern.compile(pattern));
+    }
 
     /**
      * Adds a new custom prefix.
