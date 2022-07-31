@@ -8,6 +8,10 @@ public class VersionPlugin implements Plugin<Project> {
 
     @Override
     public void apply(Project project) {
-        project.getExtensions().create(EXTENSION_NAME, VersionExtension.class);
+        final VersionExtension extension = project.getExtensions().create(EXTENSION_NAME, VersionExtension.class);
+
+        // Some defaults, for maximum efficiency
+        extension.incrementPositionIfSnapshot(-2); // Second to last version: #.#.(#).#
+        extension.skipIncrementForClassifiers("alpha", "beta", "pre", "rc");
     }
 }
