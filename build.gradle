@@ -1,9 +1,14 @@
 plugins {
     id 'java-gradle-plugin'
+    id 'org.cadixdev.licenser' version '0.6.1'
 }
 
 group = 'tk.sciwhiz12.gradle'
 version = '0.1.0-SNAPSHOT'
+
+license {
+    header = project.file('LICENSE.txt')
+}
 
 repositories {
     mavenCentral()
