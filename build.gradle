@@ -28,7 +28,7 @@ dependencies {
 
 gradlePlugin {
     plugins {
-        greeting {
+        simplversion {
             id = 'tk.sciwhiz12.gradle.simplversion'
             implementationClass = 'tk.sciwhiz12.gradle.simplversion.VersionPlugin'
         }
