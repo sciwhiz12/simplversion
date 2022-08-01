@@ -12,7 +12,18 @@ version and the `-SNAPSHOT` suffix in the full version.
 
 ## Installation
 
-> **TODO:** figure out where we're publishing this plugin, and add repo instructions as appropriate
+Add the Modding Inquisition releases maven as a plugin repository to your `settings.gradle`:
+```gradle
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        maven {
+            name 'ModdingInquisition'
+            url 'https://maven.moddinginquisition.org/releases'
+        }
+    }
+}
+```
 
 Apply the `tk.sciwhiz12.gradle.simplversion` plugin:
 ```gradle
