@@ -29,6 +29,8 @@ dependencies {
 gradlePlugin {
     plugins {
         simplversion {
+            displayName = 'simplversion'
+            description = 'A simple Git tag-based versioning plugin '
             id = 'tk.sciwhiz12.gradle.simplversion'
             implementationClass = 'tk.sciwhiz12.gradle.simplversion.VersionPlugin'
         }
