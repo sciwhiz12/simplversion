@@ -1,6 +1,7 @@
 plugins {
     id 'java-gradle-plugin'
     id 'org.cadixdev.licenser' version '0.6.1'
+    id 'maven-publish'
 }
 
 group = 'tk.sciwhiz12.gradle'
@@ -30,7 +31,7 @@ gradlePlugin {
     plugins {
         simplversion {
             displayName = 'simplversion'
-            description = 'A simple Git tag-based versioning plugin '
+            description = 'A simple Git tag-based versioning plugin'
             id = 'tk.sciwhiz12.gradle.simplversion'
             implementationClass = 'tk.sciwhiz12.gradle.simplversion.VersionPlugin'
         }
@@ -67,4 +68,55 @@ tasks.withType(Jar).configureEach {
     includeEmptyDirs false
     preserveFileTimestamps = false
     reproducibleFileOrder = true
+}
+
+publishing {
+    publications {
+        pluginMaven(MavenPublication) { // Auto-defined by the Gradle plugin-dev plugin
+            pom {
+                name = 'simplversion'
+                description = 'A simple Git tag-based versioning plugin'
+                url = 'https://github.com/sciwhiz12/simplversion'
+                inceptionYear = '2022'
+                issueManagement {
+                    system = 'GitHub Issues'
+                    url = 'https://github.com/sciwhiz12/simplversion/issues'
+                }
+                licenses {
+                    license {
+                        name = 'MIT License'
+                        url = 'https://opensource.org/licenses/MIT'
+                    }
+                }
+                developers {
+                    developer {
+                        name = 'sciwhiz12'
+                        email = 'sciwhiz12@gmail.com'
+                    }
+                }
+            }
+        }
+    }
+
+    repositories {
+        if (project.hasProperty('inquisitionReleasesPassword'))
+            maven {
+                name 'inquisitionReleases'
+                url 'https://maven.moddinginquisition.org/releases'
+                credentials(PasswordCredentials)
+                authentication {
+                    basic(BasicAuthentication)
+                }
+            }
+
+        if (project.hasProperty('inquisitionSnapshotsPassword'))
+            maven {
+                name 'inquisitionSnapshots'
+                url 'https://maven.moddinginquisition.org/snapshots'
+                credentials(PasswordCredentials)
+                authentication {
+                    basic(BasicAuthentication)
+                }
+            }
+    }
 }
