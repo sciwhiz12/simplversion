@@ -1,1 +1,11 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        maven {
+            name 'ModdingInquisition'
+            url 'https://maven.moddinginquisition.org/releases'
+        }
+    }
+}
+
 rootProject.name = 'simplversion'

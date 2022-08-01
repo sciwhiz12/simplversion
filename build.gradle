@@ -1,11 +1,13 @@
 plugins {
     id 'java-gradle-plugin'
     id 'org.cadixdev.licenser' version '0.6.1'
+    id 'tk.sciwhiz12.gradle.simplversion' version '0.1.0' // Always keep this pinned to specific version
     id 'maven-publish'
 }
 
 group = 'tk.sciwhiz12.gradle'
-version = '0.1.0'
+version = versions.version
+println "Version: $version"
 
 license {
     header(project.file('LICENSE.txt'))
