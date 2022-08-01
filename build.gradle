@@ -60,3 +60,9 @@ tasks.named('check') {
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+tasks.withType(Jar).configureEach {
+    includeEmptyDirs false
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
