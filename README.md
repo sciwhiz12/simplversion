@@ -25,10 +25,10 @@ pluginManagement {
 }
 ```
 
-Apply the `tk.sciwhiz12.gradle.simplversion` plugin:
+Apply the `dev.sciwhiz12.gradle.simplversion` plugin:
 ```gradle
 plugins {
-    id 'tk.sciwhiz12.gradle.simplversion' version '0.1.0' // Replace version with the latest release
+    id 'dev.sciwhiz12.gradle.simplversion' version '0.1.0' // Replace version with the latest release
 }
 ```
 
