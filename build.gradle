@@ -21,7 +21,7 @@ java {
 
 dependencies {
     //noinspection GradlePackageUpdate We can't upgrade to 6.x because that's Java 11
-    implementation 'org.eclipse.jgit:org.eclipse.jgit:5.13.1.202206130422-r'
+    implementation 'org.eclipse.jgit:org.eclipse.jgit:5.13.3.202401111512-r'
 
     testImplementation 'org.junit.jupiter:junit-jupiter:5.8.2'
 }
