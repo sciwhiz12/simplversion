@@ -4,7 +4,7 @@ plugins {
     id 'maven-publish'
 }
 
-group = 'tk.sciwhiz12.gradle'
+group = 'dev.sciwhiz12.gradle'
 version = '0.2.0-SNAPSHOT'
 
 license {
@@ -32,8 +32,8 @@ gradlePlugin {
         simplversion {
             displayName = 'simplversion'
             description = 'A simple Git tag-based versioning plugin'
-            id = 'tk.sciwhiz12.gradle.simplversion'
-            implementationClass = 'tk.sciwhiz12.gradle.simplversion.VersionPlugin'
+            id = 'dev.sciwhiz12.gradle.simplversion'
+            implementationClass = 'dev.sciwhiz12.gradle.simplversion.VersionPlugin'
         }
     }
 }

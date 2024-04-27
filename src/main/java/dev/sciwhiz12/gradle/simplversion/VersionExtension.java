@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package tk.sciwhiz12.gradle.simplversion;
+package dev.sciwhiz12.gradle.simplversion;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Constants;
