@@ -27,12 +27,15 @@ dependencies {
 }
 
 gradlePlugin {
+    website = 'https://github.com/sciwhiz12/simplversion'
+    vcsUrl = 'https://github.com/sciwhiz12/simplversion'
     plugins {
         simplversion {
             displayName = 'simplversion'
             description = 'A simple Git tag-based versioning plugin'
             id = 'dev.sciwhiz12.gradle.simplversion'
             implementationClass = 'dev.sciwhiz12.gradle.simplversion.VersionPlugin'
+            tags.set(['git', 'versioning'])
         }
     }
 }
