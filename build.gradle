@@ -99,4 +99,10 @@ publishing {
             }
         }
     }
+    repositories {
+        maven {
+            name 'projectLocal'
+            url rootProject.file('repo')
+        }
+    }
 }
