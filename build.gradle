@@ -99,26 +99,4 @@ publishing {
             }
         }
     }
-
-    repositories {
-        if (project.hasProperty('inquisitionReleasesPassword'))
-            maven {
-                name 'inquisitionReleases'
-                url 'https://maven.moddinginquisition.org/releases'
-                credentials(PasswordCredentials)
-                authentication {
-                    basic(BasicAuthentication)
-                }
-            }
-
-        if (project.hasProperty('inquisitionSnapshotsPassword'))
-            maven {
-                name 'inquisitionSnapshots'
-                url 'https://maven.moddinginquisition.org/snapshots'
-                credentials(PasswordCredentials)
-                authentication {
-                    basic(BasicAuthentication)
-                }
-            }
-    }
 }
