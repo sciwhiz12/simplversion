@@ -12,23 +12,13 @@ version and the `-SNAPSHOT` suffix in the full version.
 
 ## Installation
 
-Add the Modding Inquisition releases maven as a plugin repository to your `settings.gradle`:
-```gradle
-pluginManagement {
-    repositories {
-        gradlePluginPortal()
-        maven {
-            name 'ModdingInquisition'
-            url 'https://maven.moddinginquisition.org/releases'
-        }
-    }
-}
-```
+This plugin is available [on the Gradle Plugin Portal](https://plugins.gradle.org/plugin/dev.sciwhiz12.gradle.simplversion);
+you do not need to add an additional repository.
 
 Apply the `dev.sciwhiz12.gradle.simplversion` plugin:
 ```gradle
 plugins {
-    id 'dev.sciwhiz12.gradle.simplversion' version '0.1.0' // Replace version with the latest release
+    id 'dev.sciwhiz12.gradle.simplversion' version '0.2.0' // Replace version with the latest release
 }
 ```
 
